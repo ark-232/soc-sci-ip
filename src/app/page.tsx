@@ -4,93 +4,23 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
 import { Settings, Book, Briefcase, Activity, Clock, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { President, PowerDistribution, TimelineEvent, presidents } from "./content";
 
-interface PowerDistribution {
-  diplomatic: number;
-  informational: number;
-  military: number;
-  economic: number;
-}
-
-interface President {
-  name: string;
-  years: string;
-  focus: string;
-  grandStrategy: string;
-  nationalInterests: string[];
-  theory: string;
-  instrumentsOfPower: string[];
-  fasAnalysis: string;
-  keyEvents: string[];
-  powerDistribution: PowerDistribution;
-  quotes: string[];
-}
-
-const presidents: President[] = [
-  {
-    name: "Truman",
-    years: "1945-1953",
-    focus: "Containment and Post-WWII Recovery",
-    grandStrategy: "Containment",
-    nationalInterests: ["Defense of homeland", "Promote democracy", "Prevent Soviet expansion"],
-    theory: "Neorealism",
-    instrumentsOfPower: ["Military (NATO)", "Economic (Marshall Plan)", "Diplomacy"],
-    fasAnalysis: "High feasibility due to U.S. post-war economic and military strength. Strong acceptability both domestically and internationally. Highly suitable for stabilizing Europe and containing Soviet influence.",
-    keyEvents: ["Marshall Plan (1948)", "NATO Formation (1949)", "Korean War (1950-1953)"],
-    powerDistribution: { diplomatic: 80, informational: 70, military: 90, economic: 100 },
-    quotes: [
-      "George Kennan's 'Long Telegram' described the Soviets as 'implacably hostile' and 'incapable of long-term cooperation with the West.'",
-      "Brands (2014) highlights that Truman’s 'containment' strategy fundamentally shaped the Cold War era, asserting U.S. dominance in a bipolar world order.",
-      "As noted by Nuechterlein, Truman prioritized 'defense of the homeland' and 'promoting democracy,' essential national interests in the early Cold War period."
-    ]
-  },
-  {
-    name: "Nixon",
-    years: "1969-1974",
-    focus: "Détente and China Relations",
-    grandStrategy: "Détente",
-    nationalInterests: ["Economic well-being", "Stable world order", "Maintain balance with USSR and China"],
-    theory: "Realism",
-    instrumentsOfPower: ["Diplomacy (China, USSR)", "Military (Vietnam)", "Economic"],
-    fasAnalysis: "Mixed feasibility due to domestic economic challenges and Cold War complexities. High acceptability for détente with China but mixed public opinion on Vietnam. Suitable for reducing Cold War tensions.",
-    keyEvents: ["Opening to China (1972)", "SALT I Treaty (1972)", "End of Vietnam War (1973)"],
-    powerDistribution: { diplomatic: 100, informational: 60, military: 70, economic: 80 },
-    quotes: [
-      "Nixon described his foreign policy as a 'strategy of negotiations'—seeking leverage through diplomacy to reduce global tensions (Brands, 2014).",
-      "'China’s role in the world has changed, and America must adjust.' Nixon’s move to open relations with China in 1972 was a pivotal geopolitical shift (Nye, 2015).",
-      "Détente was 'a calculated blend of hard and soft power,' focusing on managing relations with both China and the USSR (Elman & Jensen, 2014)."
-    ]
-  },
-  {
-    name: "Reagan",
-    years: "1981-1989",
-    focus: "Confrontation with USSR",
-    grandStrategy: "Confrontation with USSR",
-    nationalInterests: ["Promote democracy", "Defense of homeland", "Defeat Soviet Union"],
-    theory: "Offensive Realism",
-    instrumentsOfPower: ["Military (SDI)", "Economic sanctions", "Diplomacy (arms reduction)"],
-    fasAnalysis: "Feasibility was challenging due to high defense spending (SDI) and Cold War pressures. Acceptability strong domestically with Reagan’s 'evil empire' rhetoric but raised concerns internationally. Suitable for increasing pressure on the USSR.",
-    keyEvents: ["Strategic Defense Initiative (1983)", "Reykjavík Summit (1986)", "Fall of Berlin Wall (1989)"],
-    powerDistribution: { diplomatic: 70, informational: 90, military: 100, economic: 80 },
-    quotes: [
-      "Reagan's Strategic Defense Initiative (SDI) symbolized 'hard power at its peak,' challenging the Soviet Union's military capabilities (Brands, 2014).",
-      "Reagan framed the Cold War as 'a moral struggle between good and evil,' emphasizing ideological confrontation (Nuechterlein, 2001).",
-      "Reykjavík Summit was a turning point in arms control, showcasing Reagan’s 'dual-use' of military pressure and diplomatic outreach (Nye, 2009)."
-    ]
-  }
-];
-
-const PresidentCard: React.FC<{ president: President; onClick: (president: President) => void }> = ({ president, onClick }) => (
-  <motion.div
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="bg-white dark:bg-gray-700 shadow-lg rounded-lg p-6 cursor-pointer transition-colors duration-300 hover:shadow-xl"
-    onClick={() => onClick(president)}
-  >
-    <h2 className="text-2xl font-semibold dark:text-white">{president.name}</h2>
-    <p className="text-sm text-gray-500 dark:text-gray-400">{president.years}</p>
-    <p className="mt-2 dark:text-gray-300">{president.focus}</p>
-  </motion.div>
+const PresidentSelector: React.FC<{ presidents: President[]; onSelect: (president: President) => void }> = ({ presidents, onSelect }) => (
+  <div className="flex space-x-4 mb-8">
+    {presidents.map((president) => (
+      <motion.button
+        key={president.name}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 cursor-pointer transition-colors duration-300 hover:shadow-xl"
+        onClick={() => onSelect(president)}
+      >
+        <h2 className="text-xl font-semibold dark:text-white">{president.name}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{president.years}</p>
+      </motion.button>
+    ))}
+  </div>
 );
 
 const PowerDistributionChart: React.FC<{ data: PowerDistribution }> = ({ data }) => (
@@ -103,6 +33,54 @@ const PowerDistributionChart: React.FC<{ data: PowerDistribution }> = ({ data })
     </RadarChart>
   </ResponsiveContainer>
 );
+
+const Timeline: React.FC<{ events: TimelineEvent[] }> = ({ events }) => {
+  const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
+
+  return (
+    <div className="relative w-full mt-8 mb-12">
+      <div className="absolute inset-0 flex items-center">
+        <div className="h-0.5 w-full bg-gray-300 dark:bg-gray-700"></div>
+      </div>
+      <div className="relative flex justify-between">
+        {events.map((event, index) => (
+          <motion.div
+            key={index}
+            className="flex flex-col items-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <button
+              className="w-4 h-4 rounded-full bg-blue-500 dark:bg-purple-700 hover:bg-blue-600 dark:hover:bg-purple-600 transition-colors duration-300"
+              onClick={() => setSelectedEvent(event)}
+            ></button>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{event.year}</p>
+          </motion.div>
+        ))}
+      </div>
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute top-8 left-0 right-0 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg mt-4"
+          >
+            <h3 className="text-lg font-semibold dark:text-white">{selectedEvent.title}</h3>
+            <p className="text-gray-600 dark:text-gray-300 mt-2">{selectedEvent.description}</p>
+            <button
+              className="mt-2 text-blue-500 dark:text-purple-400 hover:underline"
+              onClick={() => setSelectedEvent(null)}
+            >
+              Close
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const TabContent: React.FC<{ icon: React.ReactNode; title: string; content: React.ReactNode }> = ({ icon, title, content }) => (
   <div>
@@ -209,11 +187,7 @@ const Modal: React.FC<{ president: President; onClose: () => void; onNext: () =>
               icon={<Clock className="mr-2" />}
               title="Key Events"
               content={
-                <ul className="list-disc pl-5 dark:text-gray-300">
-                  {president.keyEvents.map((event, index) => (
-                    <li key={`event-${index}`} className="mb-2">{event}</li>
-                  ))}
-                </ul>
+                <Timeline events={president.timelineEvents} />
               }
             />
           )}
@@ -264,7 +238,7 @@ export default function Home() {
   const [selectedPresident, setSelectedPresident] = useState<President | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleModal = (president: President) => {
+  const handlePresidentSelect = (president: President) => {
     setSelectedPresident(president);
     setIsModalOpen(true);
   };
@@ -308,18 +282,7 @@ export default function Home() {
         U.S. Grand Strategy Visualization
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-        {presidents.map((president, index) => (
-          <motion.div
-            key={president.name}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <PresidentCard president={president} onClick={handleModal} />
-          </motion.div>
-        ))}
-      </div>
+      <PresidentSelector presidents={presidents} onSelect={handlePresidentSelect} />
 
       <AnimatePresence>
         {isModalOpen && selectedPresident && (
